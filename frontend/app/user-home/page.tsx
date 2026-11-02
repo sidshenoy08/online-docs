@@ -9,13 +9,14 @@ import Typography from '@mui/material/Typography';
 import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 
 import { FileUpload } from "@/components/application/file-upload/file-upload-base";
+import Navbar from "@/components/Navbar";
 
 
 export default function UserHome() {
   return (
-    <>
-      <h1>Welcome to User Home</h1>
-      <div className="flex flex-row items-center gap-4 items-center justify-center">
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <div className="flex flex-1 flex-row items-start gap-4 justify-center pt-10">
         {/* <Box
           sx={{
             display: 'flex',
@@ -55,6 +56,6 @@ export default function UserHome() {
           </FileUpload.List>
         </FileUpload.Root>
       </div>
-    </>
+    </div>
   )
 };
