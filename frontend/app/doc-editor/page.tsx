@@ -1,10 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import React, { useRef,useState } from 'react';
+import { useRef, useState } from 'react';
 
-const Editor = dynamic(() => import('@/components/quill/Editor'), { 
-  ssr: false 
+import Navbar from '@/components/Navbar';
+
+const Editor = dynamic(() => import('@/components/editor/Editor'), {
+  ssr: false
 });
 
 // Define the RichTextEditorHandle type
@@ -25,23 +27,19 @@ export default function DocEditor() {
   };
 
   return (
-    <div className="p-4">
-      <div>
-        <Editor ref={editorRef} />
+    <>
+      <Navbar />
+      <div className="p-4">
+        <div>
+          <Editor ref={editorRef} />
+        </div>
+        <button
+          onClick={handleGetContent}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded flex "
+        >
+          Show Content
+        </button>
       </div>
-      <button
-        onClick={handleGetContent}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded flex "
-      >
-        Show Content
-      </button>
-      <div className="mt-4">
-        <h2 className="font-bold text-lg">Editor Content:</h2>
-        <div
-          className="border p-4 rounded bg-gray-50"
-          dangerouslySetInnerHTML={{ __html: editorContent }}
-        />
-      </div>
-    </div>
+    </>
   );
 }
