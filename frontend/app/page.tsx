@@ -17,13 +17,35 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import Navbar from "@/components/Navbar";
 
 export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [cpassword, setCPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [newUser, setNewUser] = useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const encodedCredentials = btoa(`${email}:${password}`);
 
-    // Add your login logic here
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Basic ${encodedCredentials}`,
+        'Content-Type': 'application/json'
+      }
+    })
+      .then((response) => {
+        console.log(response.status);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      })
+  };
+
+  const cleanStates = () => {
+    setEmail("");
+    setPassword("");
+    setCPassword("");
   };
 
   return (
@@ -49,14 +71,13 @@ export default function Login() {
             borderRadius: 3,
           }}
         >
-          <Typography variant="h4" fontWeight="bold" textAlign="center">
+          <Typography variant="h4">
             Welcome to Online Docs
           </Typography>
 
           <Typography
             variant="body2"
             color="text.secondary"
-            textAlign="center"
             sx={{ mt: 1, mb: 4 }}
           >
             Sign in to access your documents
@@ -72,6 +93,8 @@ export default function Login() {
               variant="outlined"
               margin="normal"
               autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
             />
 
             {!newUser ? <>
@@ -99,6 +122,8 @@ export default function Login() {
                     ),
                   },
                 }}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
               />
 
               <Button
@@ -113,6 +138,7 @@ export default function Login() {
                   textTransform: "none",
                   fontSize: "1rem",
                 }}
+                disabled={password.length === 0 || email.length === 0}
               >
                 Sign In
               </Button>
@@ -142,6 +168,8 @@ export default function Login() {
                       ),
                     },
                   }}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                 />
 
                 <TextField
@@ -168,6 +196,10 @@ export default function Login() {
                       ),
                     },
                   }}
+                  value={cpassword}
+                  onChange={(event) => setCPassword(event.target.value)}
+                  error={cpassword !== password && cpassword.length > 0}
+                  helperText={cpassword !== password && cpassword.length > 0 ? "Passwords do not match" : ""}
                 />
 
                 <Button
@@ -182,12 +214,12 @@ export default function Login() {
                     textTransform: "none",
                     fontSize: "1rem",
                   }}
+                  disabled={cpassword !== password || password.length === 0 || email.length === 0}
                 >
                   Register
                 </Button>
               </>}
           </Box>
-
 
           {!newUser ? <>
             <Typography
@@ -201,8 +233,9 @@ export default function Login() {
                 color="secondary"
                 fontWeight="bold"
                 sx={{ textDecoration: "none" }}
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={(event) => {
+                  event.preventDefault();
+                  cleanStates();
                   setNewUser(true);
                 }}
               >
@@ -221,8 +254,9 @@ export default function Login() {
                 color="secondary"
                 fontWeight="bold"
                 sx={{ textDecoration: "none" }}
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={(event) => {
+                  event.preventDefault();
+                  cleanStates();
                   setNewUser(false);
                 }}
               >
