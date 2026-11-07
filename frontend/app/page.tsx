@@ -23,23 +23,40 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [newUser, setNewUser] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const loginUser = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const encodedCredentials = btoa(`${email}:${password}`);
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
-      method: "GET",
-      headers: {
-        "Authorization": `Basic ${encodedCredentials}`,
-        'Content-Type': 'application/json'
-      }
-    })
-      .then((response) => {
-        console.log(response.status);
+    if (!newUser) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Basic ${encodedCredentials}`,
+          'Content-Type': 'application/json'
+        }
       })
-      .catch((error) => {
-        console.error("Error:", error);
+        .then((response) => {
+          console.log(response.status);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    } else {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Basic ${encodedCredentials}`,
+          'Content-Type': 'application/json'
+        }
       })
+        .then((response) => {
+          console.log(response.status);
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+
   };
 
   const cleanStates = () => {
@@ -83,7 +100,7 @@ export default function Login() {
             Sign in to access your documents
           </Typography>
 
-          <Box component="form" onSubmit={handleSubmit}>
+          <Box component="form" onSubmit={loginUser}>
             <TextField
               fullWidth
               required

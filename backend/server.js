@@ -3,6 +3,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
+const { login, register } = require("./auth/auth.js");
+
 const app = express();
 
 app.use(cors({
@@ -11,23 +13,14 @@ app.use(cors({
 
 app.get("/login", (req, res) => {
     const authHeader = req.headers.authorization;
+    login(authHeader);
+    res.send(`Hello`);
+});
 
-    if (!authHeader || !authHeader.startsWith("Basic ")) {
-        return res.status(401).send("Unauthorized");
-    }
-
-    const [scheme, encodedCredentials] = authHeader.split(' ');
-
-    if (scheme !== 'Basic' || !encodedCredentials) {
-        return res.status(401).send('Invalid authentication scheme');
-    }
-
-    const decoded = Buffer.from(encodedCredentials, 'base64').toString('utf-8');
-    const [username, password] = decoded.split(':');
-
-    console.log(`Username: ${username}, Password: ${password}`);
-  
-    res.send(`Hello ${username}`);
+app.get("/register", (req, res) => {
+    const authHeader = req.headers.authorization;
+    register(authHeader);
+    res.send(`Hello`);
 });
 
 app.listen(process.env.PORT, () => {

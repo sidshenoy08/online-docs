@@ -1,4 +1,4 @@
-import { db } from "./src/prisma/db";
+const { db } = require("../src/prisma/db.ts");
 
 async function main() {
   const created = await db.orm.public.User.create({
