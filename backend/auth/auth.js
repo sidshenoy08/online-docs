@@ -45,11 +45,11 @@ async function verifyPassword(password, storedPassword) {
 
 function validateReqHeaders(authHeader) {
     if (!authHeader || !authHeader.startsWith("Basic ")) {
-        return res.status(401).send("Unauthorized");
+        return res.status(401).send("Unauthorized"); // TODO: handle status code in server.js
     }
     const [scheme, encodedCredentials] = authHeader.split(' ');
     if (scheme !== 'Basic' || !encodedCredentials) {
-        return res.status(401).send('Invalid authentication scheme');
+        return res.status(401).send('Invalid authentication scheme'); // TODO: handle status code in server.js
     }
     const decoded = Buffer.from(encodedCredentials, 'base64').toString('utf-8');
     const [username, password] = decoded.split(':');
@@ -58,9 +58,20 @@ function validateReqHeaders(authHeader) {
 }
 
 
-function login(authHeader) {
-    const [username, password] = validateReqHeaders(authHeader);
-    console.log(`Username: ${username}, Password: ${password}`);
+async function login(authHeader) {
+    const { username, password } = validateReqHeaders(authHeader);
+
+    const user = await db.orm.public.User.where({ email: username }).first();
+
+    if (!user) {
+        console.log("User not found!"); // TODO: return 401 Unauthorized
+    }
+
+    if (await verifyPassword(password, user.password)) {
+        console.log(`User ${username} logged in!`); // successful login, TODO: generate Access and Referesh tokens
+    } else {
+        console.log("Invalid password!"); // TODO: return 401 Unauthorized
+    }
 }
 
 
@@ -73,7 +84,11 @@ async function register(authHeader) {
         password: dbHash
     });
 
-    console.log(newUser);
+    if (newUser) {
+        console.log(`User ${username} registered!`); // successful login, TODO: generate Access and Referesh tokens
+    } else {
+        console.log(`Failed to register user ${username}`); // TODO: return 500 Internal Server Error
+    }
 
     await db.close();
 }
