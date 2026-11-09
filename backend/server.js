@@ -11,15 +11,16 @@ app.use(cors({
     origin: process.env.FRONTEND_URL
 }));
 
-app.get("/login", (req, res) => {
+app.get("/login", async (req, res) => {
     const authHeader = req.headers.authorization;
-    login(authHeader);
+    const { accessToken, refreshToken } = await login(authHeader);
     res.send(`Hello`);
 });
 
-app.get("/register", (req, res) => {
+app.get("/register", async (req, res) => {
     const authHeader = req.headers.authorization;
-    register(authHeader);
+    const { accessToken, refreshToken } = await register(authHeader);
+    console.log(`Access: ${accessToken}, Refresh: ${refreshToken}`);
     res.send(`Hello`);
 });
 

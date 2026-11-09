@@ -1,5 +1,6 @@
 const { scrypt, randomBytes, timingSafeEqual } = require('node:crypto');
 const { promisify } = require('node:util');
+const jwt = require('jsonwebtoken');
 
 const { db } = require("../src/prisma/db.ts");
 
@@ -58,17 +59,42 @@ function validateReqHeaders(authHeader) {
 }
 
 
+function generateTokens(user) {
+    const payload = {
+        id: user.id,
+        email: user.email
+    };
+
+    const accessToken = jwt.sign(
+        payload,
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+    );
+
+    const refreshToken = jwt.sign(
+        payload,
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+    );
+
+    return { accessToken, refreshToken };
+}
+
+
 async function login(authHeader) {
     const { username, password } = validateReqHeaders(authHeader);
 
     const user = await db.orm.public.User.where({ email: username }).first();
+
+    await db.close();
 
     if (!user) {
         console.log("User not found!"); // TODO: return 401 Unauthorized
     }
 
     if (await verifyPassword(password, user.password)) {
-        console.log(`User ${username} logged in!`); // successful login, TODO: generate Access and Referesh tokens
+        console.log(`User ${username} logged in!`); // successful login
+        return generateTokens(user);
     } else {
         console.log("Invalid password!"); // TODO: return 401 Unauthorized
     }
@@ -84,13 +110,15 @@ async function register(authHeader) {
         password: dbHash
     });
 
+    await db.close();
+
     if (newUser) {
-        console.log(`User ${username} registered!`); // successful login, TODO: generate Access and Referesh tokens
+        console.log(`User ${username} registered!`); // successful registration
+        return generateTokens(newUser);
     } else {
         console.log(`Failed to register user ${username}`); // TODO: return 500 Internal Server Error
     }
-
-    await db.close();
 }
+
 
 module.exports = { login, register };
