@@ -4,11 +4,22 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
-export interface NavbarProps {
-    isLoggedIn: boolean;
-};
+import { useAuthStore } from '@/app/store/authStore';
 
-export default function Navbar({ isLoggedIn }: NavbarProps) {
+
+async function logout() {
+  try {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } finally {
+    useAuthStore.getState().clearAuth();
+  }
+}
+
+
+export default function Navbar() {
     return (
         <Box>
             <AppBar position="static" color="secondary">
@@ -16,7 +27,7 @@ export default function Navbar({ isLoggedIn }: NavbarProps) {
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         Online Docs
                     </Typography>
-                    {isLoggedIn ? <Button color="inherit">Logout</Button> : <Button color="inherit">Login</Button> }
+                    {useAuthStore.getState().isAuthenticated ? <Button onClick={() => {logout()}} color="inherit">Logout</Button> : <Button color="inherit">Login</Button> }
                 </Toolbar>
             </AppBar>
         </Box>

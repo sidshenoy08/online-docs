@@ -86,7 +86,7 @@ async function login(authHeader) {
 
     const user = await db.orm.public.User.where({ email: username }).first();
 
-    await db.close();
+    // await db.close();
 
     if (!user) {
         console.log("User not found!"); // TODO: return 401 Unauthorized
@@ -94,7 +94,7 @@ async function login(authHeader) {
 
     if (await verifyPassword(password, user.password)) {
         console.log(`User ${username} logged in!`); // successful login
-        return generateTokens(user);
+        return { user: user, tokens: generateTokens(user) };
     } else {
         console.log("Invalid password!"); // TODO: return 401 Unauthorized
     }
@@ -110,11 +110,11 @@ async function register(authHeader) {
         password: dbHash
     });
 
-    await db.close();
+    // await db.close();
 
     if (newUser) {
         console.log(`User ${username} registered!`); // successful registration
-        return generateTokens(newUser);
+        return { user: newUser, tokens: generateTokens(newUser) };
     } else {
         console.log(`Failed to register user ${username}`); // TODO: return 500 Internal Server Error
     }

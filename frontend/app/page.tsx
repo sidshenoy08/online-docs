@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
@@ -15,6 +16,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 import Navbar from "@/components/Navbar";
+import { useAuthStore } from "@/app/store/authStore";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -22,6 +24,8 @@ export default function Login() {
   const [cpassword, setCPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [newUser, setNewUser] = useState(false);
+
+  const router = useRouter();
 
   const loginUser = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -33,10 +37,17 @@ export default function Login() {
         headers: {
           "Authorization": `Basic ${encodedCredentials}`,
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'
       })
-        .then((response) => {
-          console.log(response.status);
+        .then(async (response) => {
+          const data = await response.json();
+          useAuthStore.getState().setAuth(
+            data.user,
+            data.accessToken
+          );
+
+          router.push("/user-home");
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -47,16 +58,22 @@ export default function Login() {
         headers: {
           "Authorization": `Basic ${encodedCredentials}`,
           'Content-Type': 'application/json'
-        }
+        },
+        credentials: 'include'
       })
-        .then((response) => {
-          console.log(response.status);
+        .then(async (response) => {
+          const data = await response.json();
+          useAuthStore.getState().setAuth(
+            data.user,
+            data.accessToken
+          );
+
+          router.push("/user-home");
         })
         .catch((error) => {
           console.error("Error:", error);
         });
     }
-
   };
 
   const cleanStates = () => {
