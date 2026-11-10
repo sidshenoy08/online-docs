@@ -29,7 +29,7 @@ export default function AuthInitializer() {
       } catch {
         clearAuth();
       }
-    }
+    };
 
     initializeAuth();
   }, [setAuth, clearAuth]);

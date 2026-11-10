@@ -33,9 +33,9 @@ export default function Login() {
 
     if (!newUser) {
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
-        method: "GET",
+        method: 'POST',
         headers: {
-          "Authorization": `Basic ${encodedCredentials}`,
+          'Authorization': `Basic ${encodedCredentials}`,
           'Content-Type': 'application/json'
         },
         credentials: 'include'
@@ -46,7 +46,7 @@ export default function Login() {
             data.user,
             data.accessToken
           );
-
+          cleanStates();
           router.push("/user-home");
         })
         .catch((error) => {
@@ -54,9 +54,9 @@ export default function Login() {
         });
     } else {
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
-        method: "GET",
+        method: 'POST',
         headers: {
-          "Authorization": `Basic ${encodedCredentials}`,
+          'Authorization': `Basic ${encodedCredentials}`,
           'Content-Type': 'application/json'
         },
         credentials: 'include'
@@ -67,7 +67,7 @@ export default function Login() {
             data.user,
             data.accessToken
           );
-
+          cleanStates();
           router.push("/user-home");
         })
         .catch((error) => {
@@ -84,8 +84,7 @@ export default function Login() {
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <Navbar isLoggedIn={false} />
-
+      <Navbar />
       <Box
         sx={{
           flex: 1,

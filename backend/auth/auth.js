@@ -2,7 +2,7 @@ const { scrypt, randomBytes, timingSafeEqual } = require('node:crypto');
 const { promisify } = require('node:util');
 const jwt = require('jsonwebtoken');
 
-const { db } = require("../src/prisma/db.ts");
+// const { db } = require("../src/prisma/db.ts");
 
 const scryptAsync = promisify(scrypt);
 
@@ -81,7 +81,7 @@ function generateTokens(user) {
 }
 
 
-async function login(authHeader) {
+async function login(authHeader, db) {
     const { username, password } = validateReqHeaders(authHeader);
 
     const user = await db.orm.public.User.where({ email: username }).first();
@@ -101,7 +101,7 @@ async function login(authHeader) {
 }
 
 
-async function register(authHeader) {
+async function register(authHeader, db) {
     const { username, password } = validateReqHeaders(authHeader);
     const dbHash = await hashPassword(password);
 
@@ -121,4 +121,20 @@ async function register(authHeader) {
 }
 
 
-module.exports = { login, register };
+async function refreshAuthTokens(currentRefreshToken, db) {
+    const decodedToken = jwt.verify(
+        currentRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+    );
+
+    const user = await db.orm.public.User.first({ id: decodedToken.id });
+
+    if (!user) {
+        console.log("User not found through refresh token!"); // TODO: handle error - not just logging
+    }
+
+    return { user: user, tokens: generateTokens(user) };
+}
+
+
+module.exports = { login, register, refreshAuthTokens };
