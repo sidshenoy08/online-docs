@@ -11,7 +11,7 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 
 export type EditorHandle = {
-  getContent: () => string;
+  getContents: () => object;
 };
 
 const Editor = forwardRef<EditorHandle>((_, ref) => {
@@ -19,9 +19,11 @@ const Editor = forwardRef<EditorHandle>((_, ref) => {
   const quillRef = useRef<Quill | null>(null);
 
   useEffect(() => {
-    const container = editorRef.current;
+    if (!editorRef.current) {
+      return;
+    }
 
-    if (!container) return;
+    const container = editorRef.current;
 
     const quill = new Quill(container, {
       theme: 'snow',
@@ -43,17 +45,18 @@ const Editor = forwardRef<EditorHandle>((_, ref) => {
       const toolbar = quill.getModule('toolbar')?.container;
       toolbar?.remove();
 
-      // Clear the editor container
+      // // Clear the editor container
       container.innerHTML = '';
       container.classList.remove('ql-container', 'ql-snow');
 
       quillRef.current = null;
+      // editorRef.current!.innerHTML = '';
     };
   }, []);
 
   useImperativeHandle(ref, () => ({
-    getContent: () => {
-      return quillRef.current?.root.innerHTML ?? '';
+    getContents: () => {
+      return quillRef.current?.getContents() ?? { ops: [] };
     },
   }));
 

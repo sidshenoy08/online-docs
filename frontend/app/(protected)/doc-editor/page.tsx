@@ -11,18 +11,17 @@ const Editor = dynamic(() => import('@/components/editor/Editor'), {
 
 // Define the RichTextEditorHandle type
 type EditorHandle = {
-  getContent: () => string;
+  getContents: () => object;
 };
 
 
 export default function DocEditor() {
   const editorRef = useRef<EditorHandle>(null); // Ref for RichTextEditor
-  const [editorContent, setEditorContent] = useState<string>(''); // State to store the editor content
 
   const handleGetContent = () => {
     if (editorRef.current) {
-      const content = editorRef.current.getContent(); // Get the editor content
-      setEditorContent(content); // Update the state with the content
+      const contents = editorRef.current?.getContents();
+      console.log(contents);
     }
   };
 
@@ -37,7 +36,7 @@ export default function DocEditor() {
           onClick={handleGetContent}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded flex "
         >
-          Show Content
+          Save
         </button>
       </div>
     </>

@@ -5,6 +5,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const { login, register, refreshAuthTokens } = require("./auth/auth.js");
+const { authenticateToken } = require("./middleware/middleware.js");
 const { db } = require("./src/prisma/db.ts");
 
 const app = express();
@@ -72,7 +73,7 @@ app.post("/auth/refresh", async (req, res) => {
     const currentRefreshToken = req.cookies?.refreshToken;
 
     if (!currentRefreshToken) {
-        return res.status(401).json({message: "Refresh token is missing!"});
+        return res.status(401).json({ message: "Refresh token is missing!" });
     }
 
     const authResponse = await refreshAuthTokens(currentRefreshToken, db);
