@@ -57,7 +57,8 @@ app.post("/auth/logout", (req, res) => {
         res.clearCookie('refreshToken', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax'
+            sameSite: 'lax',
+            path: '/auth'
         });
 
         return res.status(200).json({ message: "User logged out successfully!" });

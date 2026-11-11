@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
@@ -10,6 +10,8 @@ import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 
 import { FileUpload } from "@/components/application/file-upload/file-upload-base";
 import Navbar from "@/components/Navbar";
+
+import { useAuthStore } from '@/app/store/authStore';
 
 
 export default function UserHome() {

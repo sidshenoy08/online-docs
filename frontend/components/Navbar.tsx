@@ -1,3 +1,5 @@
+'use client';
+
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -12,7 +14,7 @@ import { useAuthStore } from '@/app/store/authStore';
 export default function Navbar() {
   const router = useRouter();
 
-  console.log(useAuthStore.getState());
+  const isUserAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   async function logout() {
     try {
@@ -33,7 +35,7 @@ export default function Navbar() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Online Docs
           </Typography>
-          {useAuthStore.getState().isAuthenticated ? <Button onClick={logout} color="inherit">Logout</Button> : <></>}
+          {isUserAuthenticated ? <Button onClick={logout} color="inherit">Logout</Button> : <></>}
         </Toolbar>
       </AppBar>
     </Box>
