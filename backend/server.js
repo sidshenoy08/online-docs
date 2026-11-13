@@ -4,14 +4,17 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
-const { login, register, refreshAuthTokens } = require("./auth/auth.js");
-const { authenticateToken } = require("./middleware/middleware.js");
 const { db } = require("./src/prisma/db.ts");
+const authenticateToken = require("./middleware/middleware.js");
+const { login, register, refreshAuthTokens } = require("./auth/auth.js");
+const { saveDocument } = require("./db-queries/queries.js");
+
 
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true
@@ -90,6 +93,16 @@ app.post("/auth/refresh", async (req, res) => {
     });
 
     return res.status(200).json({ accessToken: accessToken, user: { id: user.id, email: user.email, name: user.name } });
+});
+
+app.post("/save-doc", authenticateToken, async (req, res) => {
+    try {
+        const doc = await saveDocument(req.user.id, req.body.id, req.body.name, req.body.content, db);
+
+        return res.status(200).json({ docId: doc.id, message: "Document saved successfully!" });
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error while saving document!" });
+    }
 });
 
 app.listen(process.env.PORT, () => {

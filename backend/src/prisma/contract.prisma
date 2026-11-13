@@ -5,4 +5,18 @@ model User {
   email String  @unique
   name  String?
   password String
+  documents Document[]
+}
+
+model Document {
+  id   String   @id @onCreate(uuid())
+  name String
+  createdAt temporal.CreatedAt
+  updatedAt temporal.UpdatedAt
+  content Json
+
+  userId  Int
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
