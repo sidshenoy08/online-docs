@@ -1,20 +1,144 @@
 'use client';
 
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
+import Box from '@mui/material/Box';
+import type { GridColDef } from '@mui/x-data-grid';
+import { DataGrid, useGridApiRef } from '@mui/x-data-grid';
+import IconButton from '@mui/material/IconButton';
+import FileOpenOutlinedIcon from '@mui/icons-material/FileOpenOutlined';
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import { useEffect, useState } from 'react';
 
 import { FileUpload } from "@/components/application/file-upload/file-upload-base";
 import Navbar from "@/components/Navbar";
-
 import { useAuthStore } from '@/app/store/authStore';
 
 
+const openDocument = (event: any, rowData: any) => {
+  event.stopPropagation();
+  console.log('Clicked row:', rowData);
+};
+
+const deleteDocument = (event: any, rowData: any) => {
+  event.stopPropagation();
+  console.log('Clicked row:', rowData);
+};
+
+const columns: GridColDef<(any)[number]>[] = [
+  {
+    field: 'name',
+    headerName: 'Document Title',
+    editable: true
+  },
+  {
+    field: 'createdAt',
+    headerName: 'Created On',
+    type: 'date',
+    valueGetter: (value) => (value ? new Date(value) : null),
+    valueFormatter: (value?: Date) => {
+      if (!value) return '';
+      return value.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    editable: true
+  },
+  {
+    field: 'updatedAt',
+    headerName: 'Updated On',
+    type: 'date',
+    valueGetter: (value) => (value ? new Date(value) : null),
+    valueFormatter: (value?: Date) => {
+      if (!value) return '';
+      return value.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    editable: true
+  },
+  {
+    field: 'openDoc',
+    sortable: false,
+    filterable: false,
+    renderCell: (params) => {
+      return (
+        <IconButton color='primary' onClick={(event) => openDocument(event, params)}>
+          <FileOpenOutlinedIcon fontSize="inherit" />
+        </IconButton>
+      );
+    },
+    renderHeader: () => null
+  },
+  {
+    field: 'deleteDoc',
+    sortable: false,
+    filterable: false,
+    renderCell: (params) => {
+      return (
+        <IconButton color='error' onClick={(event) => deleteDocument(event, params)}>
+          <DeleteOutlinedIcon fontSize="inherit" />
+        </IconButton>
+      );
+    },
+    renderHeader: () => null
+  }
+];
+
+
 export default function UserHome() {
+  const [userDocs, setUserDocs] = useState([]);
+
+  const apiRef = useGridApiRef();
+
+  useEffect(() => {
+    const fetchUserDocs = async () => {
+      const userToken = useAuthStore.getState().accessToken;
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fetch-docs`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${userToken}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error(`API Error!`);
+        }
+
+        const data = await response.json();
+        setUserDocs(data.documents);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchUserDocs();
+  }, []);
+
+  useEffect(() => {
+    if (userDocs.length > 0 && apiRef.current) {
+      apiRef.current.autosizeColumns({
+        includeHeaders: true,
+        includeOutliers: true,
+      });
+    }
+  }, [userDocs, apiRef]);
+
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -58,6 +182,32 @@ export default function UserHome() {
           </FileUpload.List>
         </FileUpload.Root>
       </div>
+
+      <Box sx={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={userDocs}
+          columns={columns}
+          sx={{
+            '& .MuiDataGrid-columnHeaders': {
+              backgroundColor: '#f5f5f5',
+            },
+            '& .MuiDataGrid-columnHeaderTitle': {
+              fontWeight: 700,
+              fontSize: '0.875rem',
+            },
+          }}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 5,
+              },
+            },
+          }}
+          pageSizeOptions={[5]}
+          apiRef={apiRef}
+          disableRowSelectionOnClick
+        />
+      </Box>
     </div>
   )
 };

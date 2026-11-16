@@ -41,7 +41,7 @@ export default function DocEditor() {
       });
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response}`);
+        throw new Error(`API Error!`);
       }
 
       const data = await response.json();
