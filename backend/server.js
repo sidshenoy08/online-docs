@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const { db } = require("./src/prisma/db.ts");
 const authenticateToken = require("./middleware/middleware.js");
 const { login, register, refreshAuthTokens } = require("./auth/auth.js");
-const { fetchDocuments, saveDocument } = require("./db-queries/queries.js");
+const { fetchDocuments, saveDocument, deleteDocument } = require("./db-queries/queries.js");
 
 
 const app = express();
@@ -115,4 +115,19 @@ app.post("/save-doc", authenticateToken, async (req, res) => {
 
 app.listen(process.env.PORT, () => {
     console.log(`Server is running on port ${process.env.PORT}`);
+});
+
+app.delete("/delete-doc/:docId", authenticateToken, async (req, res) => {
+    try {
+        const docId = req.params.docId;
+        const doc = await deleteDocument(req.user.id, docId, db);
+
+        if (doc) {
+            return res.status(200).json({ message: "Document deleted successfully!" });
+        } else {
+            return res.status(404).json({ message: "Document not found!" });
+        }
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error while deleting document!" });
+    }
 });

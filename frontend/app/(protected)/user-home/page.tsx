@@ -17,89 +17,106 @@ import Navbar from "@/components/Navbar";
 import { useAuthStore } from '@/app/store/authStore';
 
 
-const openDocument = (event: any, rowData: any) => {
-  event.stopPropagation();
-  console.log('Clicked row:', rowData);
-};
-
-const deleteDocument = (event: any, rowData: any) => {
-  event.stopPropagation();
-  console.log('Clicked row:', rowData);
-};
-
-const columns: GridColDef<(any)[number]>[] = [
-  {
-    field: 'name',
-    headerName: 'Document Title',
-    editable: true
-  },
-  {
-    field: 'createdAt',
-    headerName: 'Created On',
-    type: 'date',
-    valueGetter: (value) => (value ? new Date(value) : null),
-    valueFormatter: (value?: Date) => {
-      if (!value) return '';
-      return value.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    },
-    editable: true
-  },
-  {
-    field: 'updatedAt',
-    headerName: 'Updated On',
-    type: 'date',
-    valueGetter: (value) => (value ? new Date(value) : null),
-    valueFormatter: (value?: Date) => {
-      if (!value) return '';
-      return value.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    },
-    editable: true
-  },
-  {
-    field: 'openDoc',
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => {
-      return (
-        <IconButton color='primary' onClick={(event) => openDocument(event, params)}>
-          <FileOpenOutlinedIcon fontSize="inherit" />
-        </IconButton>
-      );
-    },
-    renderHeader: () => null
-  },
-  {
-    field: 'deleteDoc',
-    sortable: false,
-    filterable: false,
-    renderCell: (params) => {
-      return (
-        <IconButton color='error' onClick={(event) => deleteDocument(event, params)}>
-          <DeleteOutlinedIcon fontSize="inherit" />
-        </IconButton>
-      );
-    },
-    renderHeader: () => null
-  }
-];
-
-
 export default function UserHome() {
   const [userDocs, setUserDocs] = useState([]);
-
   const apiRef = useGridApiRef();
+
+  const openDocument = async (event: any, doc: any) => {
+    event.stopPropagation();
+  };
+
+  const deleteDocument = async (event: any, doc: any) => {
+    event.stopPropagation();
+    
+    const userToken = useAuthStore.getState().accessToken;
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/delete-doc/${doc.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error!`);
+      }
+
+      setUserDocs((prevDocs: any) => prevDocs.filter((prevDoc: any) => prevDoc.id !== doc.id));
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const columns: GridColDef<(any)[number]>[] = [
+    {
+      field: 'name',
+      headerName: 'Document Title',
+      editable: true
+    },
+    {
+      field: 'createdAt',
+      headerName: 'Created On',
+      type: 'date',
+      valueGetter: (value) => (value ? new Date(value) : null),
+      valueFormatter: (value?: Date) => {
+        if (!value) return '';
+        return value.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      },
+      editable: true
+    },
+    {
+      field: 'updatedAt',
+      headerName: 'Updated On',
+      type: 'date',
+      valueGetter: (value) => (value ? new Date(value) : null),
+      valueFormatter: (value?: Date) => {
+        if (!value) return '';
+        return value.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      },
+      editable: true
+    },
+    {
+      field: 'openDoc',
+      sortable: false,
+      filterable: false,
+      renderCell: (row) => {
+        return (
+          <IconButton color='primary' onClick={(event) => openDocument(event, row)}>
+            <FileOpenOutlinedIcon fontSize="inherit" />
+          </IconButton>
+        );
+      },
+      renderHeader: () => null
+    },
+    {
+      field: 'deleteDoc',
+      sortable: false,
+      filterable: false,
+      renderCell: (row) => {
+        return (
+          <IconButton color='error' onClick={(event) => deleteDocument(event, row)}>
+            <DeleteOutlinedIcon fontSize="inherit" />
+          </IconButton>
+        );
+      },
+      renderHeader: () => null
+    }
+  ];
 
   useEffect(() => {
     const fetchUserDocs = async () => {
@@ -137,7 +154,6 @@ export default function UserHome() {
       });
     }
   }, [userDocs, apiRef]);
-
 
   return (
     <div className="min-h-screen flex flex-col">

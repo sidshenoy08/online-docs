@@ -35,4 +35,23 @@ async function saveDocument(userId, docId, docTitle, docContent, db) {
     }
 }
 
-module.exports = { fetchDocuments, saveDocument };
+
+async function deleteDocument(userId, docId, db) {
+    try {
+        const doc = await db.orm.public.Document.where({userId: userId}).where({id: docId}).delete(); // find document by id and userid
+
+        if (doc) {
+            console.log(`Document ${docId} of user ${userId} deleted successfully!`);
+        } else {
+            console.log(`Document ${docId} not found!`);
+        }
+
+        return doc;
+    } catch (err) {
+        console.log(`Error ${err} occurred while deleting document ${docId}!`);
+        throw err;
+    }
+}
+
+
+module.exports = { fetchDocuments, saveDocument, deleteDocument };
