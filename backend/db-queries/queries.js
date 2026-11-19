@@ -10,25 +10,37 @@ async function fetchDocuments(userId, db) {
 }
 
 
-async function saveDocument(userId, docId, docTitle, docContent, db) {
+async function updateDocument(userId, docId, docTitle, docContent, db) {
     try {
-        if (!docId) {
-            const doc = await db.orm.public.Document.create({
-                name: docTitle,
-                userId: userId,
-                content: docContent
-            });
+        const doc = await db.orm.public.Document
+            .where({ userId: userId })
+            .where({ id: docId })
+            .update({ name: docTitle, content: docContent });
 
-            console.log(`New doc '${docTitle}' for user ${userId} created!`); // successfuly saved new document
-            return doc;
+        console.log(`Doc '${docTitle}' of user ${userId} updated!`); // updated existing document
+        return doc;
+    } catch (err) {
+        console.log(`Error ${err} occurred while updating document!`);
+        throw err;
+    }
+}
+
+
+async function saveDocument(userId, docTitle, docContent, db) {
+    try {
+        const doc = await db.orm.public.Document.create({
+            name: docTitle,
+            userId: userId,
+            content: docContent
+        });
+
+        if (doc) {
+            console.log(`Document ${docId} of user ${userId} updated successfully!`);
         } else {
-            const doc = await db.orm.public.Document
-                .where({ id: docId })
-                .update({ name: docTitle, content: docContent });
-
-            console.log(`Doc '${docTitle}' of user ${userId} updated!`); // updated existing document
-            return doc;
+            console.log(`Document ${docId} not found!`);
         }
+
+        return doc;
     } catch (err) {
         console.log(`Error ${err} occurred while saving document!`);
         throw err;
@@ -38,7 +50,10 @@ async function saveDocument(userId, docId, docTitle, docContent, db) {
 
 async function deleteDocument(userId, docId, db) {
     try {
-        const doc = await db.orm.public.Document.where({userId: userId}).where({id: docId}).delete(); // find document by id and userid
+        const doc = await db.orm.public.Document
+            .where({ userId: userId })
+            .where({ id: docId })
+            .delete(); // find document by id and userid
 
         if (doc) {
             console.log(`Document ${docId} of user ${userId} deleted successfully!`);
@@ -54,4 +69,4 @@ async function deleteDocument(userId, docId, db) {
 }
 
 
-module.exports = { fetchDocuments, saveDocument, deleteDocument };
+module.exports = { fetchDocuments, updateDocument, saveDocument, deleteDocument };

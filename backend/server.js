@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const { db } = require("./src/prisma/db.ts");
 const authenticateToken = require("./middleware/middleware.js");
 const { login, register, refreshAuthTokens } = require("./auth/auth.js");
-const { fetchDocuments, saveDocument, deleteDocument } = require("./db-queries/queries.js");
+const { fetchDocuments, updateDocument, saveDocument, deleteDocument } = require("./db-queries/queries.js");
 
 
 const app = express();
@@ -95,32 +95,41 @@ app.post("/auth/refresh", async (req, res) => {
     return res.status(200).json({ accessToken: accessToken, user: { id: user.id, email: user.email, name: user.name } });
 });
 
-app.get("/fetch-docs", authenticateToken, async(req, res) => {
+app.get("/fetch-docs", authenticateToken, async (req, res) => {
     try {
         const userDocs = await fetchDocuments(req.user.id, db);
-        return res.status(200).json({documents: userDocs, message: "Documents fetched successfully!"});
+        return res.status(200).json({ documents: userDocs, message: "Documents fetched successfully!" });
     } catch (err) {
         return res.status(500).json({ message: "Internal server error while fetching documents!" });
     }
 });
 
+app.patch("/update-doc", authenticateToken, async (req, res) => {
+    try {
+        const doc = await updateDocument(req.user.id, req.body.id, req.body.name, req.body.content, db);
+
+        if (doc) {
+            return res.status(200).json({ message: "Document updated successfully!" });
+        } else {
+            return res.status(404).json({ message: "Document not found!" });
+        }
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error while updating document!" });
+    }
+});
+
 app.post("/save-doc", authenticateToken, async (req, res) => {
     try {
-        const doc = await saveDocument(req.user.id, req.body.id, req.body.name, req.body.content, db);
+        const doc = await saveDocument(req.user.id, req.body.name, req.body.content, db);
         return res.status(200).json({ docId: doc.id, message: "Document saved successfully!" });
     } catch (err) {
         return res.status(500).json({ message: "Internal server error while saving document!" });
     }
 });
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`);
-});
-
 app.delete("/delete-doc/:docId", authenticateToken, async (req, res) => {
     try {
-        const docId = req.params.docId;
-        const doc = await deleteDocument(req.user.id, docId, db);
+        const doc = await deleteDocument(req.user.id, req.params.docId, db);
 
         if (doc) {
             return res.status(200).json({ message: "Document deleted successfully!" });
@@ -130,4 +139,8 @@ app.delete("/delete-doc/:docId", authenticateToken, async (req, res) => {
     } catch (err) {
         return res.status(500).json({ message: "Internal server error while deleting document!" });
     }
+});
+
+app.listen(process.env.PORT, () => {
+    console.log(`Server is running on port ${process.env.PORT}`);
 });

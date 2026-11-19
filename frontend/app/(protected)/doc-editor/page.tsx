@@ -1,8 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
+import { useSearchParams } from 'next/navigation';
 
 import Navbar from '@/components/Navbar';
 import { useAuthStore } from '@/app/store/authStore';
@@ -22,12 +23,42 @@ export default function DocEditor() {
   const [docTitle, setDocTitle] = useState<string>("Untitled Doc");
   const [documentId, setDocumentId] = useState<string | null>(null);
 
-  const saveDocument = async () => {
-    const userToken = useAuthStore.getState().accessToken;
+  const searchParams = useSearchParams();
+  const docId = searchParams.get("id");
 
+  const userToken = useAuthStore.getState().accessToken;
+
+  const saveDocument = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/save-doc`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          // id: documentId,
+          name: docTitle,
+          content: editorRef.current ? editorRef.current?.getContents() : []
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error!`);
+      }
+
+      const data = await response.json();
+      setDocumentId(data.docId);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const updateDocument = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/update-doc`, {
+        method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${userToken}`,
           'Content-Type': 'application/json'
@@ -45,11 +76,18 @@ export default function DocEditor() {
       }
 
       const data = await response.json();
-      setDocumentId(data.docId);
+      
+      if (data.docId) {
+        console.log("Doc updated!");
+      }
     } catch (err) {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    setDocumentId(docId); // set id of document that was clicked on
+  }, []);
 
   return (
     <>
@@ -60,7 +98,7 @@ export default function DocEditor() {
           <Editor ref={editorRef} />
         </div>
         <button
-          onClick={saveDocument}
+          onClick={documentId ? updateDocument : saveDocument}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded flex "
         >
           Save

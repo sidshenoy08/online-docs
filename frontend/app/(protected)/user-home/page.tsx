@@ -2,6 +2,7 @@
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import CardActionArea from '@mui/material/CardActionArea';
 import Typography from '@mui/material/Typography';
 import CreateOutlinedIcon from '@mui/icons-material/CreateOutlined';
 import Box from '@mui/material/Box';
@@ -11,6 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import FileOpenOutlinedIcon from '@mui/icons-material/FileOpenOutlined';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { FileUpload } from "@/components/application/file-upload/file-upload-base";
 import Navbar from "@/components/Navbar";
@@ -20,14 +22,20 @@ import { useAuthStore } from '@/app/store/authStore';
 export default function UserHome() {
   const [userDocs, setUserDocs] = useState([]);
   const apiRef = useGridApiRef();
+  const router = useRouter();
+
+  const createNewDocument = () => {
+    router.push('/doc-editor');
+  };
 
   const openDocument = async (event: any, doc: any) => {
     event.stopPropagation();
+    router.push(`/doc-editor?id=${doc.id}`);
   };
 
   const deleteDocument = async (event: any, doc: any) => {
     event.stopPropagation();
-    
+
     const userToken = useAuthStore.getState().accessToken;
 
     try {
@@ -178,17 +186,19 @@ export default function UserHome() {
           </Paper>
         </Box> */}
         <Card>
-          <CardContent sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 1
-          }}>
-            <CreateOutlinedIcon color="secondary" />
-            <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
-              Create a new document
-            </Typography>
-          </CardContent>
+          <CardActionArea onClick={createNewDocument}>
+            <CardContent sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1
+            }}>
+              <CreateOutlinedIcon color="secondary" />
+              <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                Create a new document
+              </Typography>
+            </CardContent>
+          </CardActionArea>
         </Card>
 
         <FileUpload.Root>
