@@ -6,13 +6,14 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 import { useAuthStore } from '@/app/store/authStore';
 
 
 export default function Navbar() {
   const router = useRouter();
+  const pathName = usePathname();
 
   const isUserAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
@@ -35,9 +36,10 @@ export default function Navbar() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Online Docs
           </Typography>
+          {pathName.includes("doc-editor") ? <Button onClick={() => { router.push("/user-home") }} color="inherit">Home</Button> : <></>}
           {isUserAuthenticated ? <Button onClick={logout} color="inherit">Logout</Button> : <></>}
         </Toolbar>
       </AppBar>
     </Box>
   );
-}
+};

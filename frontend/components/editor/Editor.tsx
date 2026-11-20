@@ -12,6 +12,7 @@ import 'quill/dist/quill.snow.css';
 
 export type EditorHandle = {
   getContents: () => object;
+  setContents: (content: object) => void;
 };
 
 const Editor = forwardRef<EditorHandle>((_, ref) => {
@@ -58,6 +59,10 @@ const Editor = forwardRef<EditorHandle>((_, ref) => {
     getContents: () => {
       return quillRef.current?.getContents() ?? { ops: [] };
     },
+
+    setContents(content) {
+      quillRef.current?.setContents(content);
+    }
   }));
 
   return <div ref={editorRef} style={{ height: '300px' }} />;

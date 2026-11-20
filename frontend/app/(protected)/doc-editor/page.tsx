@@ -15,6 +15,7 @@ const Editor = dynamic(() => import('@/components/editor/Editor'), {
 // Define the RichTextEditorHandle type
 type EditorHandle = {
   getContents: () => object;
+  setContents: (content: object) => void;
 };
 
 
@@ -27,6 +28,32 @@ export default function DocEditor() {
   const docId = searchParams.get("id");
 
   const userToken = useAuthStore.getState().accessToken;
+
+  const fetchDocContent = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/fetch-doc-content/${docId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${userToken}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error!`);
+      }
+
+      const data = await response.json();
+
+      setDocTitle(data.document.name);
+      editorRef.current?.setContents(
+        data.document.content
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   const saveDocument = async () => {
     try {
@@ -76,7 +103,7 @@ export default function DocEditor() {
       }
 
       const data = await response.json();
-      
+
       if (data.docId) {
         console.log("Doc updated!");
       }
@@ -87,6 +114,10 @@ export default function DocEditor() {
 
   useEffect(() => {
     setDocumentId(docId); // set id of document that was clicked on
+
+    if (docId) {
+      fetchDocContent(); // fetch document content if existing document opened
+    }
   }, []);
 
   return (
@@ -106,4 +137,4 @@ export default function DocEditor() {
       </div>
     </>
   );
-}
+};

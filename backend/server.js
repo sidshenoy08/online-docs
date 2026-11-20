@@ -7,7 +7,7 @@ const cookieParser = require("cookie-parser");
 const { db } = require("./src/prisma/db.ts");
 const authenticateToken = require("./middleware/middleware.js");
 const { login, register, refreshAuthTokens } = require("./auth/auth.js");
-const { fetchDocuments, updateDocument, saveDocument, deleteDocument } = require("./db-queries/queries.js");
+const { fetchDocuments, fetchDocumentContent, updateDocument, saveDocument, deleteDocument } = require("./db-queries/queries.js");
 
 
 const app = express();
@@ -101,6 +101,15 @@ app.get("/fetch-docs", authenticateToken, async (req, res) => {
         return res.status(200).json({ documents: userDocs, message: "Documents fetched successfully!" });
     } catch (err) {
         return res.status(500).json({ message: "Internal server error while fetching documents!" });
+    }
+});
+
+app.get("/fetch-doc-content/:docId", authenticateToken, async (req, res) => {
+    try {
+        const doc = await fetchDocumentContent(req.user.id, req.params.docId, db);
+        return res.status(200).json({ document: doc, message: "Document content retrieved successfully!" });
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error while fetching document content!" });
     }
 });
 
