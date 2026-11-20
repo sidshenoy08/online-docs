@@ -126,6 +126,70 @@ export default function UserHome() {
     }
   ];
 
+  type UploadState = {
+    file: File;
+    progress: number;
+    failed: boolean;
+  };
+
+  const [upload, setUpload] = useState<UploadState | null>(null);
+
+  const uploadWordFile = (file: File) => {
+    setUpload({
+      file,
+      progress: 0,
+      failed: false,
+    });
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const userToken = useAuthStore.getState().accessToken;
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("POST", `${process.env.NEXT_PUBLIC_API_URL}/import-doc`);
+    xhr.setRequestHeader("Authorization", `Bearer ${userToken}`);
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const progress = Math.floor(
+          (event.loaded / event.total) * 100
+        );
+
+        // 100% when the server confirms success.
+        setUpload((prev) =>
+          prev ? { ...prev, progress: Math.min(progress, 99) } : prev
+        );
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        setUpload((prev) =>
+          prev ? { ...prev, progress: 100 } : prev
+        );
+
+        const response = JSON.parse(xhr.responseText);
+
+        // handle the imported document here.
+        console.log(response);
+      } else {
+        setUpload((prev) =>
+          prev ? { ...prev, failed: true } : prev
+        );
+      }
+    };
+
+    xhr.onerror = () => {
+      setUpload((prev) =>
+        prev ? { ...prev, failed: true } : prev
+      );
+    };
+
+    xhr.send(formData);
+  };
+
   useEffect(() => {
     const fetchUserDocs = async () => {
       const userToken = useAuthStore.getState().accessToken;
@@ -167,24 +231,6 @@ export default function UserHome() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <div className="flex flex-1 flex-row items-start gap-4 justify-center pt-10">
-        {/* <Box
-          sx={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            '& > :not(style)': {
-              m: 1,
-              width: 180,
-              height: 150
-            }
-          }}
-        >
-          <Paper elevation={3} sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, p: 2}}>
-            <CreateOutlinedIcon color="secondary" />
-            <Typography variant="body2" color="text.secondary" sx={{whiteSpace: 'nowrap'}}>
-              Create a new document
-            </Typography>
-          </Paper>
-        </Box> */}
         <Card>
           <CardActionArea onClick={createNewDocument}>
             <CardContent sx={{
@@ -202,10 +248,30 @@ export default function UserHome() {
         </Card>
 
         <FileUpload.Root>
-          <FileUpload.DropZone />
-          <FileUpload.List>
-            <FileUpload.ListItemProgressBar />
-          </FileUpload.List>
+          <FileUpload.DropZone
+            accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            allowsMultiple={false}
+            maxSize={10 * 1024 * 1024}
+            hint="Word documents only (.docx, max. 10 MB)"
+            onDropFiles={(files) => uploadWordFile(files[0])}
+            onDropUnacceptedFiles={() => {
+              console.error("Only Word documents are accepted");
+            }}
+          />
+
+          {upload && (
+            <FileUpload.List>
+              <FileUpload.ListItemProgressBar
+                name={upload.file.name}
+                size={upload.file.size}
+                progress={upload.progress}
+                failed={upload.failed}
+                type="word"
+                onRetry={() => uploadWordFile(upload.file)}
+                onDelete={() => setUpload(null)}
+              />
+            </FileUpload.List>
+          )}
         </FileUpload.Root>
       </div>
 
