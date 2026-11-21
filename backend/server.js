@@ -120,7 +120,7 @@ app.patch("/update-doc", authenticateToken, async (req, res) => {
         const doc = await updateDocument(req.user.id, req.body.id, req.body.name, req.body.content, db);
 
         if (doc) {
-            return res.status(200).json({ message: "Document updated successfully!" });
+            return res.status(200).json({ docId: doc.id, message: "Document updated successfully!" });
         } else {
             return res.status(404).json({ message: "Document not found!" });
         }

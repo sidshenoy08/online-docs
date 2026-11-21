@@ -76,7 +76,7 @@ export default function DocEditor() {
       }
 
       const data = await response.json();
-      setDocumentId(data.id);
+      setDocumentId(data.document.id);
     } catch (err) {
       console.log(err);
     }

@@ -31,7 +31,7 @@ export default function Login() {
     return () => {
       cleanStates();
     }
-  })
+  }, []);
 
   const loginUser = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
