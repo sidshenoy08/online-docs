@@ -76,7 +76,7 @@ export default function DocEditor() {
       }
 
       const data = await response.json();
-      setDocumentId(data.docId);
+      setDocumentId(data.id);
     } catch (err) {
       console.log(err);
     }
@@ -118,23 +118,63 @@ export default function DocEditor() {
     if (docId) {
       fetchDocContent(); // fetch document content if existing document opened
     }
+
+    return () => {
+      setDocTitle("Untitled Doc");
+      setDocumentId(null);
+    }
   }, []);
 
   return (
     <>
       <Navbar />
-      <div className="p-4">
-        <TextField id="outlined-basic" label="Document Title" variant="outlined" value={docTitle} onChange={(event) => { setDocTitle(event.target.value); }} />
-        <div>
-          <Editor ref={editorRef} />
+      <main className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+
+          {/* Page heading */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Document Editor
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Create, edit, and save your documents.
+            </p>
+          </div>
+
+          {/* Editor container */}
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
+
+            {/* Document title */}
+            <div className="mb-6">
+              <TextField
+                id="document-title"
+                label="Document Title"
+                variant="outlined"
+                fullWidth
+                value={docTitle}
+                onChange={(event) => setDocTitle(event.target.value)}
+                placeholder="Enter a document title..."
+              />
+            </div>
+
+            {/* Text editor */}
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <Editor ref={editorRef} />
+            </div>
+
+            {/* Buttons */}
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <button
+                onClick={documentId ? updateDocument : saveDocument}
+                className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                {documentId ? "Save Changes" : "Create Document"}
+              </button>
+            </div>
+
+          </div>
         </div>
-        <button
-          onClick={documentId ? updateDocument : saveDocument}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded flex "
-        >
-          Save
-        </button>
-      </div>
+      </main>
     </>
   );
 };

@@ -4,7 +4,7 @@ async function fetchDocuments(userId, db) {
             .where({ userId: userId })
             .select("id", "name", "createdAt", "updatedAt")
             .all();
-        
+
         console.log(`Documents for user ${userId} fetched!`); // successfuly retrieved all documents
         return docs;
     } catch (err) {
@@ -17,8 +17,8 @@ async function fetchDocuments(userId, db) {
 async function fetchDocumentContent(userId, docId, db) {
     try {
         const doc = await db.orm.public.Document
-            .where({userId: userId})
-            .where({id: docId})
+            .where({ userId: userId })
+            .where({ id: docId })
             .select("id", "name", "content")
             .first(); // find document by id and userid
 
@@ -27,7 +27,7 @@ async function fetchDocumentContent(userId, docId, db) {
         } else {
             console.log(`Document ${docId} not found!`);
         }
-        
+
         return doc;
     } catch (err) {
         console.log(`Error ${err} occurred while fetching document ${docId}!`);
@@ -54,16 +54,18 @@ async function updateDocument(userId, docId, docTitle, docContent, db) {
 
 async function saveDocument(userId, docTitle, docContent, db) {
     try {
-        const doc = await db.orm.public.Document.create({
-            name: docTitle,
-            userId: userId,
-            content: docContent
-        });
+        const doc = await db.orm.public.Document
+            .select("id", "name", "createdAt", "updatedAt")
+            .create({
+                name: docTitle,
+                userId: userId,
+                content: docContent
+            });
 
         if (doc) {
-            console.log(`Document ${docId} of user ${userId} updated successfully!`);
+            console.log(`Document ${doc.id} of user ${userId} saved successfully!`);
         } else {
-            console.log(`Document ${docId} not found!`);
+            console.log(`Document could not be saved!`);
         }
 
         return doc;

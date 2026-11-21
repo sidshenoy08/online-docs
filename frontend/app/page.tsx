@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import Box from "@mui/material/Box";
@@ -27,6 +27,12 @@ export default function Login() {
 
   const router = useRouter();
 
+  useEffect(() => {
+    return () => {
+      cleanStates();
+    }
+  })
+
   const loginUser = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const encodedCredentials = btoa(`${email}:${password}`);
@@ -46,7 +52,6 @@ export default function Login() {
             data.user,
             data.accessToken
           );
-          cleanStates();
           router.push("/user-home");
         })
         .catch((error) => {
@@ -67,7 +72,6 @@ export default function Login() {
             data.user,
             data.accessToken
           );
-          cleanStates();
           router.push("/user-home");
         })
         .catch((error) => {
