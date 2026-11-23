@@ -3,6 +3,8 @@
 import dynamic from 'next/dynamic';
 import { useRef, useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
+import Alert from '@mui/material/Alert';
+import CheckIcon from '@mui/icons-material/Check';
 import { useSearchParams } from 'next/navigation';
 
 import Navbar from '@/components/Navbar';
@@ -23,6 +25,7 @@ export default function DocEditor() {
   const editorRef = useRef<EditorHandle>(null); // Ref for RichTextEditor 
   const [docTitle, setDocTitle] = useState<string>("Untitled Doc");
   const [documentId, setDocumentId] = useState<string | null>(null);
+  const [docSave, setDocSave] = useState<boolean>(false);
 
   const searchParams = useSearchParams();
   const docId = searchParams.get("id");
@@ -76,7 +79,11 @@ export default function DocEditor() {
       }
 
       const data = await response.json();
-      setDocumentId(data.document.id);
+
+      if (data.document.id) {
+        setDocumentId(data.document.id);
+        setDocSave(true);
+      }
     } catch (err) {
       console.log(err);
     }
@@ -106,6 +113,7 @@ export default function DocEditor() {
 
       if (data.docId) {
         console.log("Doc updated!");
+        setDocSave(true);
       }
     } catch (err) {
       console.log(err);
@@ -125,11 +133,36 @@ export default function DocEditor() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!docSave) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setDocSave(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [docSave]);
+
   return (
     <>
       <Navbar />
       <main className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl">
+
+        <div className="relative mx-auto max-w-5xl">
+
+          {docSave && (
+            <div className="absolute top-0 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2">
+              <Alert
+                icon={<CheckIcon fontSize="inherit" />}
+                severity="success"
+                elevation={6}
+              >
+                Your document was saved successfully!
+              </Alert>
+            </div>
+          )}
 
           {/* Page heading */}
           <div className="mb-6">
