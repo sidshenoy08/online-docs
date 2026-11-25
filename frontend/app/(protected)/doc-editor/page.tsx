@@ -5,10 +5,14 @@ import { useRef, useState, useEffect } from 'react';
 import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
+import { pdfExporter } from 'quill-to-pdf';
+import { saveAs } from 'file-saver';
 import { useSearchParams } from 'next/navigation';
+import { RawOrParsedDelta } from 'quill-to-pdf';
 
 import Navbar from '@/components/Navbar';
 import { useAuthStore } from '@/app/store/authStore';
+import { Delta } from 'quill';
 
 const Editor = dynamic(() => import('@/components/editor/Editor'), {
   ssr: false
@@ -120,6 +124,12 @@ export default function DocEditor() {
     }
   };
 
+  const exportDocument = async () => {
+    const docContent = editorRef.current?.getContents()
+    const pdfAsBlob = await pdfExporter.generatePdf(docContent);
+    saveAs(pdfAsBlob, `${docTitle}.pdf`);
+  };
+
   useEffect(() => {
     setDocumentId(docId); // set id of document that was clicked on
 
@@ -202,6 +212,12 @@ export default function DocEditor() {
                 className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 {documentId ? "Save Changes" : "Create Document"}
+              </button>
+              <button
+                onClick={exportDocument}
+                className="inline-flex items-center justify-center rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Export to PDF
               </button>
             </div>
 
